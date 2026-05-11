@@ -1,5 +1,5 @@
 /* =========================================
-   飯店推薦系統 — 共用互動 JS
+   飯店推薦系統 — 共用互動 JS (LUMINA)
    ========================================= */
 
 $(function () {
@@ -21,29 +21,28 @@ $(function () {
     $('html, body').animate({ scrollTop: 0 }, 400);
   });
 
-  /* ── 3. Hotel Card hover is handled purely via CSS .card-hotel:hover ── */
+  /* ── 3. Favorite button toggle (optimistic UI) ── */
+  $(document).on('click', '.fav-btn', function () {
+    const $btn    = $(this);
+    const hotelId = $btn.data('hotel-id');
+    const $icon   = $btn.find('i');
+    const isFaved = $icon.hasClass('fa-solid');
 
-  /* ── 4. Favorite heart toggle (optimistic UI) ── */
-  $(document).on('click', '.btn-heart', function () {
-    const $btn     = $(this);
-    const hotelId  = $btn.data('hotel-id');
-    const $icon    = $btn.find('i');
-    const isFaved  = $icon.hasClass('fa-solid');
-
-    // Optimistic toggle
     $icon.toggleClass('fa-solid fa-regular');
+    $btn.toggleClass('active', !isFaved);
 
     $.ajax({
       url: (window.HOTEL_BASE || '') + '/api/favorite.php',
       type: 'POST',
       data: { hotel_id: hotelId },
     }).fail(function () {
-      // Revert on error
       $icon.toggleClass('fa-solid fa-regular');
+      $btn.toggleClass('active', isFaved);
       showToast('請先登入才能收藏', 'warning');
     }).done(function (res) {
       if (res.status !== 'ok') {
         $icon.toggleClass('fa-solid fa-regular');
+        $btn.toggleClass('active', isFaved);
         showToast(res.message || '操作失敗', 'danger');
       } else {
         showToast(res.favorited ? '已加入收藏 ❤️' : '已取消收藏', 'info');
@@ -51,7 +50,7 @@ $(function () {
     });
   });
 
-  /* ── 5. Form real-time validation ── */
+  /* ── 4. Form real-time validation ── */
   $(document).on('blur', 'input[type="email"]', function () {
     const val   = $(this).val().trim();
     const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
@@ -62,11 +61,11 @@ $(function () {
     $(this).toggleClass('is-valid', valid).toggleClass('is-invalid', !valid && $(this).val() !== '');
   });
 
-  /* ── 6. Login / Register form submit ── */
+  /* ── 5. Login form submit ── */
   $('#loginForm').on('submit', function (e) {
     e.preventDefault();
-    const $btn = $(this).find('[type=submit]');
-    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> 登入中…');
+    const $btn = $('#loginSubmit');
+    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>登入中…');
     $.ajax({
       url: (window.HOTEL_BASE || '') + '/api/auth.php',
       type: 'POST',
@@ -78,18 +77,19 @@ $(function () {
         window.location.href = dest;
       } else {
         showFormError('#loginError', res.message);
-        $btn.prop('disabled', false).text('登入');
+        $btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket me-1"></i>登入');
       }
     }).fail(function () {
       showFormError('#loginError', '連線失敗，請稍後再試');
-      $btn.prop('disabled', false).text('登入');
+      $btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket me-1"></i>登入');
     });
   });
 
+  /* ── 6. Register form submit ── */
   $('#registerForm').on('submit', function (e) {
     e.preventDefault();
-    const $btn = $(this).find('[type=submit]');
-    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> 註冊中…');
+    const $btn = $('#registerSubmit');
+    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>註冊中…');
     $.ajax({
       url: (window.HOTEL_BASE || '') + '/api/auth.php',
       type: 'POST',
@@ -101,11 +101,11 @@ $(function () {
         setTimeout(() => window.location.href = '/login.php', 1200);
       } else {
         showFormError('#registerError', res.message);
-        $btn.prop('disabled', false).text('註冊');
+        $btn.prop('disabled', false).html('<i class="fa-solid fa-user-plus me-1"></i>免費註冊');
       }
     }).fail(function () {
       showFormError('#registerError', '連線失敗，請稍後再試');
-      $btn.prop('disabled', false).text('註冊');
+      $btn.prop('disabled', false).html('<i class="fa-solid fa-user-plus me-1"></i>免費註冊');
     });
   });
 
@@ -133,10 +133,6 @@ $(function () {
                .addClass('alert alert-' + type)
                .text(msg).show();
   }
-
-  function getApiBase() {
-    return window.location.origin;
-  }
 });
 
 /* ── Toast helper (global) ── */
@@ -144,7 +140,7 @@ function showToast(msg, type = 'info') {
   const id   = 'toast-' + Date.now();
   const html = `<div id="${id}" class="toast align-items-center text-bg-${type} border-0 mb-2"
     role="alert" aria-live="polite" aria-atomic="true">
-    <div class="d-flex"><div class="toast-body">${msg}</div>
+    <div class="d-flex"><div class="toast-body fw-500">${msg}</div>
     <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
     </div></div>`;
   let $container = $('#toastContainer');
@@ -158,64 +154,70 @@ function showToast(msg, type = 'info') {
   $toast[0].addEventListener('hidden.bs.toast', () => $toast.remove());
 }
 
-/* ── Render hotel card HTML ── */
+/* ── Render hotel card HTML (LUMINA style) ── */
 function renderHotelCard(h, isLoggedIn = false) {
-  const stars   = '★'.repeat(h.stars) + '☆'.repeat(5 - h.stars);
-  const fac     = (h.facilities || []).slice(0, 4).map(f =>
-    `<span class="badge bg-light text-secondary border me-1">${f}</span>`).join('');
-  const heart   = isLoggedIn
-    ? `<button class="btn-heart ms-auto" data-hotel-id="${h.hotel_id}" aria-label="收藏">
-         <i class="fa-regular fa-heart"></i></button>`
+  const stars = '★'.repeat(h.stars) + '☆'.repeat(5 - h.stars);
+  const imgSrc = h.img_url || `https://picsum.photos/seed/hotel${h.hotel_id}/600/400`;
+
+  const favBtn = isLoggedIn
+    ? `<button class="fav-btn" data-hotel-id="${h.hotel_id}" aria-label="收藏">
+         <i class="fa-regular fa-heart"></i>
+       </button>`
     : '';
-  const score   = h.score != null
-    ? `<span class="score-badge ms-auto">相似度 ${(h.score * 100).toFixed(1)}%</span>` : '';
+
+  const aiBadge = h.score != null
+    ? `<div class="ai-badge"><span class="pulse-dot"></span>${(h.score * 100).toFixed(1)}% 相符</div>`
+    : '';
+
   const summary = h.summary
-    ? `<div class="summary-box mt-2">${h.summary}</div>` : '';
+    ? `<div class="summary-box">${h.summary}</div>` : '';
 
   return `
-  <div class="col">
-    <div class="card card-hotel h-100 fade-in-card">
-      <img src="${h.img_url || `https://picsum.photos/seed/hotel${h.hotel_id}/600/400`}"
-           class="card-img-top hotel-img-thumb"
-           alt="${h.name}"
-           data-full="${h.img_url || `https://picsum.photos/seed/hotel${h.hotel_id}/600/400`}"
-           data-title="${h.name}"
-           loading="lazy"
-           onerror="this.onerror=null;this.src='https://picsum.photos/seed/hotel${h.hotel_id}/600/400';this.dataset.full='https://picsum.photos/seed/hotel${h.hotel_id}/600/400';">
-      <div class="card-body d-flex flex-column">
-        <div class="d-flex align-items-start gap-2 mb-1">
-          <h6 class="card-title mb-0 fw-bold">${h.name}</h6>
-          ${score}
+  <div class="col fade-in-card">
+    <div class="card-hotel">
+      <div class="img-slot">
+        <img src="${imgSrc}"
+             class="hotel-img-thumb"
+             alt="${h.name}"
+             data-full="${imgSrc}"
+             data-title="${h.name}"
+             loading="lazy"
+             onerror="this.onerror=null;this.src='https://picsum.photos/seed/hotel${h.hotel_id}/600/400';">
+        ${favBtn}
+        ${aiBadge}
+      </div>
+      <div class="card-body">
+        <div class="hotel-card-name">${h.name}</div>
+        <div class="hotel-card-region">
+          <i class="fa-solid fa-location-dot"></i>${h.region}
+          <span class="ms-2 hotel-card-stars">${h.stars}★</span>
         </div>
-        <div class="d-flex align-items-center gap-2 mb-2">
-          <span class="badge bg-secondary region-badge">${h.region}</span>
-          <span class="stars">${stars}</span>
-          ${heart}
-        </div>
-        <div class="mb-2">${fac}</div>
-        <p class="card-text text-muted small flex-grow-1">${(h.description || '').slice(0, 80)}…</p>
+        <p class="text-muted mb-3" style="font-size:13px;line-height:1.6;">${(h.description || '').slice(0, 72)}…</p>
         ${summary}
-        <div class="d-flex align-items-center justify-content-between mt-3">
-          <span class="price">NT$ ${Number(h.price_per_night).toLocaleString()}<small class="fw-normal text-muted"> /晚</small></span>
-          <a href="hotel.php?id=${h.hotel_id}" class="btn btn-sm btn-outline-primary">查看詳情</a>
+        <div class="d-flex align-items-center justify-content-between mt-auto">
+          <span class="hotel-card-price">NT$ ${Number(h.price_per_night).toLocaleString()}<small>/晚</small></span>
+          <a href="hotel.php?id=${h.hotel_id}" class="btn-card-detail">查看詳情</a>
         </div>
       </div>
     </div>
   </div>`;
 }
 
-/* ── Skeleton card HTML ── */
+/* ── Skeleton card HTML (LUMINA style) ── */
 function skeletonCard() {
   return `
   <div class="col">
-    <div class="card skeleton-card placeholder-glow h-100">
-      <div class="card-img-top placeholder"></div>
+    <div class="card-hotel skeleton-card" style="pointer-events:none;">
+      <div class="img-slot"></div>
       <div class="card-body">
-        <h6 class="placeholder col-8 mb-2"></h6>
-        <p class="placeholder col-5 mb-1"></p>
-        <p class="placeholder col-10 mb-1"></p>
-        <p class="placeholder col-7 mb-3"></p>
-        <div class="placeholder col-4 rounded" style="height:1.5rem"></div>
+        <div class="skel-line mb-2" style="width:65%;height:18px;"></div>
+        <div class="skel-line mb-3" style="width:40%;height:12px;"></div>
+        <div class="skel-line mb-1" style="width:90%;height:11px;"></div>
+        <div class="skel-line mb-4" style="width:75%;height:11px;"></div>
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="skel-line" style="width:38%;height:20px;"></div>
+          <div class="skel-line" style="width:26%;height:32px;border-radius:999px;"></div>
+        </div>
       </div>
     </div>
   </div>`;

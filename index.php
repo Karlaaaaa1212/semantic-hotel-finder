@@ -11,7 +11,9 @@ $regions    = $pdo->query('SELECT DISTINCT region FROM Hotels ORDER BY region')-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>飯店推薦系統 — 首頁</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 <link href="css/style.css" rel="stylesheet">
@@ -21,119 +23,127 @@ $regions    = $pdo->query('SELECT DISTINCT region FROM Hotels ORDER BY region')-
 <!-- Navbar -->
 <nav id="mainNavbar" class="navbar navbar-expand-lg sticky-top" aria-label="主導覽">
   <div class="container">
-    <a class="navbar-brand text-white fw-bold" href="index.php">
-      <i class="fa-solid fa-hotel me-2"></i>飯店推薦
+    <a class="navbar-brand" href="index.php">
+      <span class="logo-mark">H</span>
+      飯店推薦
+      <span class="logo-zh">Hotel AI</span>
     </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navMenu">
-      <ul class="navbar-nav ms-auto gap-1">
+      <div class="ms-auto d-flex align-items-center gap-2">
         <?php if ($isLoggedIn): ?>
-          <li class="nav-item">
-            <a class="nav-link text-white" href="profile.php">
-              <i class="fa-solid fa-user me-1"></i><?= e($_SESSION['username']) ?>
-            </a>
-          </li>
+          <a class="user-chip" href="profile.php">
+            <span class="user-avatar"><?= mb_substr(e($_SESSION['username']), 0, 1) ?></span>
+            <?= e($_SESSION['username']) ?>
+          </a>
           <?php if (($_SESSION['role'] ?? '') === 'admin'): ?>
-          <li class="nav-item">
-            <a class="nav-link text-white" href="admin/dashboard.php">
-              <i class="fa-solid fa-gear me-1"></i>後台
-            </a>
-          </li>
+          <a class="btn-nav-ghost" href="admin/dashboard.php">
+            <i class="fa-solid fa-gear me-1"></i>後台
+          </a>
           <?php endif; ?>
-          <li class="nav-item">
-            <a class="btn btn-sm btn-outline-light ms-2" href="api/auth.php?action=logout">登出</a>
-          </li>
+          <a class="btn-nav-ghost" href="api/auth.php?action=logout">登出</a>
         <?php else: ?>
-          <li class="nav-item">
-            <a class="btn btn-sm btn-outline-light ms-2" href="login.php">登入</a>
-          </li>
-          <li class="nav-item">
-            <a class="btn btn-sm btn-light ms-2 text-primary fw-semibold" href="register.php">註冊</a>
-          </li>
+          <a class="btn-nav-ghost" href="login.php">登入</a>
+          <a class="btn-nav-primary" href="register.php">免費註冊</a>
         <?php endif; ?>
-      </ul>
+      </div>
     </div>
   </div>
 </nav>
 
-<!-- Hero Search -->
-<section class="hero-search">
-  <div class="container text-center">
-    <h1 class="fw-bold mb-2" style="font-size:2rem">找到最適合你的飯店</h1>
-    <p class="mb-4 opacity-75">輸入自然語言，AI 理解你的需求</p>
-    <div class="row justify-content-center">
-      <div class="col-lg-7">
-        <form id="semanticForm" class="d-flex" role="search" aria-label="語義搜尋">
-          <input id="semanticInput" type="search" class="form-control search-input"
-                 placeholder="例如：想找台北適合帶小孩的溫泉飯店…"
-                 aria-label="語義搜尋輸入">
-          <button id="semanticBtn" class="btn btn-warning fw-bold search-btn" type="submit">
-            <i class="fa-solid fa-magnifying-glass me-1"></i>AI 搜尋
-          </button>
-        </form>
+<!-- Hero -->
+<section class="lumina-hero">
+  <div class="container">
+    <span class="eyebrow">AI 飯店推薦系統</span>
+    <h1>找到<em>最適合你</em>的<br>台灣旅宿</h1>
+    <p class="hero-sub">輸入任何需求，讓 AI 理解你的旅遊心情，精準推薦最匹配的飯店。</p>
+
+    <!-- AI Search -->
+    <form id="semanticForm" aria-label="AI 語義搜尋">
+      <div class="ai-search">
+        <span class="ai-search-icon">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+        </span>
+        <input id="semanticInput" type="search"
+               placeholder="例如：想找台北有溫泉、適合帶小孩的飯店…"
+               aria-label="AI 搜尋輸入" autocomplete="off">
+        <button id="semanticBtn" class="btn-ai-search" type="submit">
+          <i class="fa-solid fa-magnifying-glass"></i>AI 搜尋
+        </button>
       </div>
+    </form>
+
+    <!-- Chips -->
+    <div class="chips">
+      <span class="chip-label">試試看</span>
+      <button class="chip" type="button" data-query="適合蜜月的海景飯店">🌊 蜜月海景</button>
+      <button class="chip" type="button" data-query="台北市中心高檔商務飯店">🏙 台北商務</button>
+      <button class="chip" type="button" data-query="花蓮山景親子民宿">🏔 花蓮親子</button>
+      <button class="chip" type="button" data-query="墾丁衝浪度假風格飯店">🏄 墾丁衝浪</button>
     </div>
   </div>
 </section>
 
 <!-- Filter Bar -->
-<div class="container my-4">
-  <div class="filter-bar p-3">
-    <form id="filterForm" class="row g-2 align-items-end">
-      <div class="col-sm-3 col-md-2">
-        <label class="form-label small fw-semibold" for="filterRegion">地區</label>
-        <select id="filterRegion" name="region" class="form-select form-select-sm">
-          <option value="">全部地區</option>
+<div class="container mt-4 mb-3">
+  <form id="filterForm">
+    <div class="filter-bar">
+      <div class="filter-group">
+        <span class="filter-label">地區</span>
+        <select id="filterRegion" name="region" class="form-select" style="width:110px">
+          <option value="">全部</option>
           <?php foreach ($regions as $r): ?>
             <option value="<?= e($r) ?>"><?= e($r) ?></option>
           <?php endforeach; ?>
         </select>
       </div>
-      <div class="col-sm-3 col-md-2">
-        <label class="form-label small fw-semibold" for="filterMinPrice">最低價</label>
-        <input id="filterMinPrice" name="min_price" type="number" class="form-control form-control-sm" placeholder="0">
+      <div class="filter-divider"></div>
+      <div class="filter-group">
+        <span class="filter-label">最低價</span>
+        <input id="filterMinPrice" name="min_price" type="number" class="form-control" placeholder="0" style="width:88px">
       </div>
-      <div class="col-sm-3 col-md-2">
-        <label class="form-label small fw-semibold" for="filterMaxPrice">最高價</label>
-        <input id="filterMaxPrice" name="max_price" type="number" class="form-control form-control-sm" placeholder="99999">
+      <div class="filter-group">
+        <span class="filter-label">最高價</span>
+        <input id="filterMaxPrice" name="max_price" type="number" class="form-control" placeholder="不限" style="width:88px">
       </div>
-      <div class="col-sm-3 col-md-2">
-        <label class="form-label small fw-semibold" for="filterStars">最低星級</label>
-        <select id="filterStars" name="stars" class="form-select form-select-sm">
+      <div class="filter-divider"></div>
+      <div class="filter-group">
+        <span class="filter-label">星級</span>
+        <select id="filterStars" name="stars" class="form-select" style="width:100px">
           <option value="0">不限</option>
           <?php for ($s=3; $s<=5; $s++): ?>
-            <option value="<?= $s ?>"><?= $s ?> 星以上</option>
+            <option value="<?= $s ?>"><?= $s ?>★ 以上</option>
           <?php endfor; ?>
         </select>
       </div>
-      <div class="col-sm-4 col-md-3">
-        <label class="form-label small fw-semibold" for="filterKeyword">關鍵字</label>
-        <input id="filterKeyword" name="keyword" type="text" class="form-control form-control-sm" placeholder="溫泉、親子…">
+      <div class="filter-divider"></div>
+      <div class="filter-group">
+        <span class="filter-label">關鍵字</span>
+        <input id="filterKeyword" name="keyword" type="text" class="form-control" placeholder="溫泉、親子…" style="width:140px">
       </div>
-      <div class="col-auto">
-        <button type="submit" class="btn btn-primary btn-sm">
-          <i class="fa-solid fa-filter me-1"></i>篩選
-        </button>
-        <button type="reset" class="btn btn-outline-secondary btn-sm ms-1">清除</button>
-      </div>
-    </form>
-  </div>
+      <span class="filter-spacer"></span>
+      <button type="submit" class="btn-filter">
+        <i class="fa-solid fa-sliders"></i>篩選
+      </button>
+      <button type="reset" class="btn-clear">清除</button>
+    </div>
+  </form>
 </div>
 
 <!-- Results -->
 <div class="container mb-5">
-  <div class="d-flex align-items-center mb-3 gap-2">
+  <div class="d-flex align-items-center mb-4 gap-3 results-header">
     <h5 id="resultsTitle" class="mb-0">所有飯店</h5>
-    <span id="resultsCount" class="text-muted small"></span>
+    <span id="resultsCount" class="count-badge"></span>
   </div>
   <div id="hotelGrid" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
     <!-- Filled by JS -->
   </div>
-  <div id="emptyState" class="text-center py-5 d-none">
-    <i class="fa-solid fa-hotel fa-3x text-muted mb-3"></i>
-    <p class="text-muted">找不到符合條件的飯店，請調整搜尋條件。</p>
+  <div id="emptyState" class="d-none">
+    <i class="fa-solid fa-hotel fa-3x"></i>
+    <p>找不到符合條件的飯店，請調整搜尋條件。</p>
   </div>
 </div>
 
@@ -152,6 +162,44 @@ $regions    = $pdo->query('SELECT DISTINCT region FROM Hotels ORDER BY region')-
   </div>
 </div>
 
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="row g-5">
+      <div class="col-lg-4">
+        <div class="footer-brand">
+          <span class="logo-mark">H</span>飯店推薦
+        </div>
+        <p>AI 驅動的台灣飯店推薦系統，用自然語言找到最適合你的旅宿。</p>
+      </div>
+      <div class="col-6 col-lg-2">
+        <span class="footer-heading">探索</span>
+        <ul class="footer-links">
+          <li><a href="index.php">首頁</a></li>
+          <li><a href="index.php">所有飯店</a></li>
+          <?php if ($isLoggedIn): ?><li><a href="profile.php">我的收藏</a></li><?php endif; ?>
+        </ul>
+      </div>
+      <div class="col-6 col-lg-2">
+        <span class="footer-heading">帳號</span>
+        <ul class="footer-links">
+          <?php if ($isLoggedIn): ?>
+            <li><a href="profile.php">個人頁面</a></li>
+            <li><a href="api/auth.php?action=logout">登出</a></li>
+          <?php else: ?>
+            <li><a href="login.php">登入</a></li>
+            <li><a href="register.php">免費註冊</a></li>
+          <?php endif; ?>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <?= date('Y') ?> 飯店推薦系統 · AI Powered by Gemini</span>
+      <span>PHP + MySQL + Bootstrap 5</span>
+    </div>
+  </div>
+</footer>
+
 <!-- Scroll to top -->
 <button id="scrollTop" aria-label="回到頂端">
   <i class="fa-solid fa-chevron-up"></i>
@@ -168,7 +216,15 @@ const API_BASE     = window.HOTEL_BASE || '';
 /* Load all hotels on page load */
 loadHotels({});
 
-/* Filter form submit */
+/* Chip clicks */
+$('.chip[data-query]').on('click', function () {
+  const q = $(this).data('query');
+  $('#semanticInput').val(q);
+  $('#semanticForm').trigger('submit');
+  $('html,body').animate({ scrollTop: $('#semanticForm').offset().top - 100 }, 300);
+});
+
+/* Filter form */
 $('#filterForm').on('submit', function (e) {
   e.preventDefault();
   loadHotels(Object.fromEntries(new URLSearchParams($(this).serialize())));
@@ -185,7 +241,7 @@ $('#semanticForm').on('submit', function (e) {
   showSkeletons(5);
   $('#resultsTitle').text('AI 語義搜尋結果');
   $('#semanticBtn').prop('disabled', true)
-    .html('<span class="spinner-border spinner-border-sm"></span>');
+    .html('<span class="spinner-border spinner-border-sm me-1"></span>搜尋中…');
 
   $.ajax({
     url: API_BASE + '/api/semantic_search.php',
@@ -195,7 +251,7 @@ $('#semanticForm').on('submit', function (e) {
   }).done(function (res) {
     if (res.status === 'ok') {
       renderCards(res.data);
-      $('#resultsCount').text(`找到 ${res.data.length} 間飯店`);
+      $('#resultsCount').text('找到 ' + res.data.length + ' 間');
     } else if (res.message && res.message.includes('向量')) {
       showSearchError(res.message + '（已改用關鍵字搜尋）');
       loadHotels({ keyword: q });
@@ -206,7 +262,7 @@ $('#semanticForm').on('submit', function (e) {
     showSearchError('連線失敗，請確認伺服器是否正常運作');
   }).always(function () {
     $('#semanticBtn').prop('disabled', false)
-      .html('<i class="fa-solid fa-magnifying-glass me-1"></i>AI 搜尋');
+      .html('<i class="fa-solid fa-magnifying-glass"></i>AI 搜尋');
   });
 });
 
@@ -227,7 +283,7 @@ function loadHotels(params) {
   $.get(API_BASE + '/api/search.php', params, function (res) {
     if (res.status === 'ok') {
       renderCards(res.data);
-      $('#resultsCount').text(`共 ${res.data.length} 間`);
+      $('#resultsCount').text('共 ' + res.data.length + ' 間');
     }
   }, 'json').fail(function () {
     showToast('載入失敗', 'danger');
