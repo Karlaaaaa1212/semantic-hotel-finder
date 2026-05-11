@@ -6,7 +6,21 @@ define('DB_HOST', 'localhost');
 define('DB_NAME', 'hotel_db');
 define('DB_USER', 'root');
 define('DB_PASS', '');
-define('GEMINI_API_KEY', 'REDACTED_GEMINI_KEY'); // aistudio.google.com → Get API Key
+// Load GEMINI_API_KEY from .env (never commit the .env file)
+(function () {
+    $envFile = __DIR__ . '/../.env';
+    if (file_exists($envFile)) {
+        foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+            if (str_starts_with(trim($line), '#')) continue;
+            [$name, $value] = array_map('trim', explode('=', $line, 2));
+            if (!array_key_exists($name, $_ENV)) {
+                putenv("$name=$value");
+                $_ENV[$name] = $value;
+            }
+        }
+    }
+})();
+define('GEMINI_API_KEY', getenv('GEMINI_API_KEY') ?: '');
 
 // ─────────────────────────────────────────────
 //  PDO Connection (singleton-style)
