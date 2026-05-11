@@ -49,6 +49,10 @@ switch ($action) {
 
     case 'logout':
         session_destroy();
+        // Direct link click (GET) → redirect; AJAX call → return JSON
+        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+            header('Location: /final/index.php'); exit;
+        }
         jsonResponse(['status' => 'ok', 'message' => '已登出']);
 
     default:
