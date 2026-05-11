@@ -35,7 +35,7 @@ $avg->execute([$hotelId]);
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-<link href="css/style.css" rel="stylesheet">
+<link href="css/style.css?v=2" rel="stylesheet">
 </head>
 <body>
 
@@ -241,14 +241,16 @@ const IS_LOGGED_IN = <?= $isLoggedIn ? 'true' : 'false' ?>;
 loadReviews();
 
 function loadReviews() {
-  $.get('/api/review.php', { hotel_id: HOTEL_ID }, function (res) {
+  $.get((window.HOTEL_BASE || '') + '/api/review.php', { hotel_id: HOTEL_ID }, function (res) {
     const $list = $('#reviewList').empty();
-    if (!res.data.length) {
+    if (!res.data || !res.data.length) {
       $list.html('<p class="text-muted text-center" style="font-size:14px;padding:20px 0;">尚無評論，成為第一個留言的人！</p>');
       return;
     }
     res.data.forEach(r => $list.append(buildReviewHTML(r)));
-  }, 'json');
+  }, 'json').fail(function () {
+    $('#reviewList').html('<p class="text-muted text-center" style="font-size:14px;padding:20px 0;">評論載入失敗，請重新整理頁面。</p>');
+  });
 }
 
 function buildReviewHTML(r) {
@@ -278,7 +280,7 @@ $('#reviewForm').on('submit', function (e) {
     .html('<span class="spinner-border spinner-border-sm me-2"></span>送出中…');
 
   $.ajax({
-    url: '/api/review.php',
+    url: (window.HOTEL_BASE || '') + '/api/review.php',
     type: 'POST',
     data: { hotel_id: HOTEL_ID, rating, content },
     dataType: 'json',
