@@ -1,0 +1,178 @@
+/* =========================================
+   飯店推薦系統 — 共用樣式
+   Design System: Minimal Clean · Navy + Blue
+   ========================================= */
+
+:root {
+  --color-primary:    #1e3a8a;
+  --color-secondary:  #3b82f6;
+  --color-accent:     #0d6efd;
+  --color-bg:         #f8fafc;
+  --color-muted:      #e9eef5;
+  --color-border:     #bfdbfe;
+  --color-text:       #1e293b;
+  --color-text-muted: #64748b;
+  --shadow-card:      0 2px 8px rgba(0,0,0,.08);
+  --shadow-hover:     0 8px 24px rgba(0,0,0,.12);
+  --radius-card:      .75rem;
+  --transition:       .2s ease;
+}
+
+/* ── Base ── */
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* ── Navbar ── */
+.navbar {
+  background: var(--color-primary) !important;
+  transition: box-shadow var(--transition);
+}
+.navbar.scrolled {
+  box-shadow: 0 2px 16px rgba(0,0,0,.18);
+}
+
+/* ── Hotel Card ── */
+.card-hotel {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  transition: transform var(--transition), box-shadow var(--transition);
+  overflow: hidden;
+}
+.card-hotel:hover {
+  transform: scale(1.03);
+  box-shadow: var(--shadow-hover);
+}
+.card-hotel .card-img-top {
+  height: 200px;
+  object-fit: cover;
+}
+.card-hotel .stars {
+  color: #f59e0b;
+  font-size: .85rem;
+}
+.card-hotel .price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+.card-hotel .region-badge {
+  font-size: .75rem;
+}
+
+/* ── Heart favorite button ── */
+.btn-heart {
+  border: none;
+  background: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0;
+  transition: transform .15s ease, color .15s ease;
+}
+.btn-heart:hover { transform: scale(1.2); }
+.btn-heart .fa-solid { color: #ef4444; }
+.btn-heart .fa-regular { color: #94a3b8; }
+
+/* ── Skeleton Loader ── */
+.skeleton-card .card-img-top {
+  height: 200px;
+  background: #e2e8f0;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in-card {
+  animation: fadeIn .35s ease forwards;
+}
+
+/* ── Scroll to Top ── */
+#scrollTop {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,.2);
+  cursor: pointer;
+  z-index: 1000;
+  transition: opacity var(--transition);
+}
+#scrollTop:hover { background: var(--color-secondary); }
+
+/* ── Similarity badge ── */
+.score-badge {
+  font-size: .7rem;
+  background: #dbeafe;
+  color: var(--color-primary);
+  padding: .2em .55em;
+  border-radius: 99px;
+  font-weight: 600;
+}
+
+/* ── Summary box ── */
+.summary-box {
+  background: #eff6ff;
+  border-left: 3px solid var(--color-secondary);
+  padding: .75rem 1rem;
+  border-radius: 0 .5rem .5rem 0;
+  font-size: .875rem;
+  color: var(--color-text);
+  line-height: 1.65;
+}
+
+/* ── Form validation ── */
+.form-control.is-invalid { border-color: #dc3545; }
+.form-control.is-valid   { border-color: #198754; }
+.invalid-feedback { display: none; font-size: .8rem; color: #dc3545; }
+.form-control.is-invalid ~ .invalid-feedback { display: block; }
+
+/* ── Filter bar ── */
+.filter-bar {
+  background: #fff;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+/* ── Hero search ── */
+.hero-search {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  padding: 3.5rem 0 2.5rem;
+  color: #fff;
+}
+.hero-search .search-input {
+  border-radius: 2rem 0 0 2rem;
+  border: none;
+  font-size: 1rem;
+  padding: .75rem 1.25rem;
+}
+.hero-search .search-btn {
+  border-radius: 0 2rem 2rem 0;
+  padding: .75rem 1.5rem;
+}
+
+/* ── Review stars ── */
+.star-select span {
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #d1d5db;
+  transition: color .1s;
+}
+.star-select span.active { color: #f59e0b; }
+
+/* ── prefers-reduced-motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, .card-hotel, .btn-heart, #scrollTop { transition: none !important; animation: none !important; }
+}
