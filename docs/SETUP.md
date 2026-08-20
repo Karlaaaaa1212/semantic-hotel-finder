@@ -22,7 +22,7 @@
 - Windows：開啟 XAMPP Control Panel，分別點擊 Apache 與 MySQL 的 `Start`，變綠色表示成功（Apache 佔用 Port 80/443，MySQL 佔用 Port 3306）
 - macOS：開啟 XAMPP → Manage Servers，分別啟動 Apache Web Server 與 MySQL Database
 
-> ⚠️ **Port 衝突**：若 Apache 無法啟動，可能是 Port 80 被其他程式（如 Skype、IIS）佔用。請關閉該程式，或在 XAMPP 設定中改用 Port 8080。
+>  **Port 衝突**：若 Apache 無法啟動，可能是 Port 80 被其他程式（如 Skype、IIS）佔用。請關閉該程式，或在 XAMPP 設定中改用 Port 8080。
 
 ## Step 3：放置專案檔案
 
@@ -55,7 +55,7 @@ git clone https://github.com/Karlaaaaa1212/semantic-hotel-finder.git
 GEMINI_API_KEY=你的APIKey
 ```
 
-> ⚠️ `.env` 不可上傳到 GitHub，請確認 `.gitignore` 已包含此檔案。
+>  `.env` 不可上傳到 GitHub，請確認 `.gitignore` 已包含此檔案。
 >
 > - Windows 記事本存檔時「存檔類型」選「所有檔案」，檔名輸入 `.env`
 > - macOS 在 Finder 按 `Cmd + Shift + .` 可顯示隱藏檔案
