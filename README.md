@@ -1,58 +1,56 @@
-# AUSURF112 -npool 掃描實驗（參考版）
+# semantic-hotel-finder
 
-這份不是要取代 opencode，而是給你一個「正確答案」的對照組：
-用 opencode 生一份、用這份對一次，練習 QE_opencode_workflow.pdf 裡強調的
-「人要 review，不要照單全收」。
+以向量檢索為核心的語意飯店搜尋引擎。輸入自然語言描述（例如「適合蜜月的海景飯店」），系統會將查詢轉換為 embedding 向量，與資料庫中的飯店向量進行相似度比對並排序，回傳最相關的結果——而不是只靠關鍵字比對。
 
-## 使用方式
+<!-- TODO: 放一張首頁截圖，觀感差很多 -->
+<!-- ![screenshot](docs/screenshot-home.png) -->
 
-1. 把這個資料夾整個上傳到 nano4（例如用 VS Code 的 Remote-SSH 直接拖曳，
-   或在你本機用 `scp -r ausurf112_npool_sweep karla1212@<nano4登入節點>:/work/karla1212/`）。
+## Features
 
-2. 把你真正的 `ausurf.in` 放進資料夾根目錄（跟 generate_jobs.py 同一層）。
+- **語意搜尋**：自然語言查詢 → embedding → 向量相似度排序，理解「意思」而非只比對字面
+- **關鍵字篩選**：地區、價格等傳統條件過濾，可與語意搜尋並用
+- **使用者系統**：註冊登入、收藏飯店、撰寫評論
+- **管理後台**：飯店資料管理、一鍵重建全站 embeddings
 
-3. 打開 `generate_jobs.py`，把 `MODULE_LOAD_LINES` 換成你自己之前
-   **成功跑過** AUSURF112 用的 module load / export 設定 —— 這是唯一你
-   一定要手動改的地方，其他預設值可以先照抄，之後再依實際情況調整。
+## How It Works
 
-4. 產生腳本（只會建立檔案，不會送出任何工作）：
-   ```bash
-   python3 generate_jobs.py
-   ```
+```
+使用者查詢（自然語言）
+        │
+        ▼
+  Embedding API（Gemini text-embedding）
+        │
+        ▼
+  查詢向量 ←─ 相似度計算（cosine similarity）─→ 飯店向量（預先計算，存於 MySQL）
+        │
+        ▼
+  依相似度排序 + 條件過濾 → 回傳結果
+```
 
-5. 檢查產生的東西：
-   ```bash
-   cat jobs/npool1.sh
-   cat jobs/npool2.sh
-   bash -n jobs/npool1.sh   # 只檢查語法，不執行
-   ```
+每間飯店的描述會預先透過 embedding model 轉為向量存入資料庫；查詢時只需為使用者輸入產生一次向量，再與全部飯店向量做相似度比對。詳細的資料庫 schema 與系統設計請見 [docs/architecture.pdf](docs/architecture.pdf)。
 
-6. 先送一個確認能跑：
-   ```bash
-   sbatch jobs/npool1.sh
-   # 用 squeue -u $USER 看狀態，跑完後打開 runs/npool1/qe.out 確認有正常收斂
-   ```
+## Tech Stack
 
-7. 確認沒問題後再送第二個：
-   ```bash
-   sbatch jobs/npool2.sh
-   ```
+| 層級 | 技術 |
+| --- | --- |
+| 前端 | HTML5、Bootstrap 5、jQuery |
+| 後端 | PHP 7.4+ |
+| 資料庫 | MySQL 5.7+ |
+| Embedding | Google Gemini API（text embedding） |
 
-8. 兩個都跑完後解析結果：
-   ```bash
-   python3 parse.py
-   ```
-   會印出比較表，並存成 `summary.csv`。如果 energy 對不上或有 case 沒收斂，
-   終端機會用文字警告你，不會默默放過。
+## Quick Start
 
-## 為什麼只掃 npool ∈ {1, 2}
+```bash
+git clone https://github.com/Karlaaaaa1212/semantic-hotel-finder.git
+```
 
-AUSURF112 這個系統只有 2 個 k 點，`-npool` 的值不能超過 k 點數，
-所以掃描空間本來就只有這兩個值，不是設計得比較保守。
+1. 將專案放入 web server 目錄（如 XAMPP 的 `htdocs/`）
+2. 建立 MySQL 資料庫並匯入 `db/schema.sql` 與 `db/add_hotels_v3.sql`
+3. 在專案根目錄建立 `.env`，填入 `GEMINI_API_KEY=你的Key`
+4. 以管理員身分進入後台產生 embeddings
 
-## 看完 summary.csv 之後
+完整的逐步安裝教學（含 XAMPP 設定、phpMyAdmin 操作、常見問題）請見 **[docs/SETUP.md](docs/SETUP.md)**。
 
-如果 npool=2 只比 npool=1 快一點點（例如 <20%），代表瓶頸不在 k 點平行，
-去看 qe.out 最後面的 timer breakdown（`c_bands`、`cdiaghg` 或 `rdiaghg`、
-`fft` 那幾行），哪個佔比最高，就代表下一輪該測 `-ndiag`（對角化）
-還是 `-ntg`（FFT）。到那時候我可以再幫你寫下一輪的產生器。
+## License
+
+MIT
